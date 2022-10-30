@@ -29,11 +29,11 @@ export function App() {
         setIsLoading(false);
 
         if (data.totalHits === 0) {
-          toast.warn('Cannot find your request! Please try again');
+          toast.error('Cannot find your request! Please try again');
         }
 
         if (data.totalHits !== 0 && page === 1) {
-          toast.warn(`We find ${data.totalHits} images`);
+          toast.success(`We find ${data.totalHits} images`);
         }
 
         if (page > data.totalHits / 12 && data.totalHits !== 0) {
@@ -43,7 +43,7 @@ export function App() {
           return setIsEndOfArray(false);
         }
       } catch (error) {
-        toast.warn('sorry, try again later');
+        toast.error('sorry, try again later');
       }
     };
     fetchImages();
