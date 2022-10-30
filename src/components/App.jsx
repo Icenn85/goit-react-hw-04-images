@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import css from './App.module.css';
 import Searchbar from './Searchbar/Searchbar';
 import Modal from './Modal/Modal';
@@ -7,91 +7,69 @@ import { getImages } from '../service/api';
 import { Button } from './Button/Button';
 import { Circles } from 'react-loader-spinner';
 
-export class App extends Component {
-  state = {
-    searchQuery: '',
-    page: 1,
-    isLoading: false,
-    images: [],
-    showModal: false,
-    fullSizeImg: '',
-    isEndOfArray: true,
-  };
+export function App() {
+   const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [images, setImages] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [fullSizeImg, setFullSizeImg] = useState('');
+  const [isEndOfArray, setIsEndOfArray] = useState(true);
 
-  onHandleFormSubmit = data => {
-    this.setState({ images: [], searchQuery: data, page: 1 });
-  };
-
-  componentDidUpdate(prevProps, prevState) {
-    const prevQuery = prevState.searchQuery;
-    const nextQuery = this.state.searchQuery;
-    const prevPage = prevState.page;
-    const nextPage = this.state.page;
-
-    if (prevQuery !== nextQuery || prevPage !== nextPage) {
-      this.fetchImages();
+  useEffect(() => {
+    if (searchQuery === '') {
+      return;
     }
-  }
+    const fetchImages = async () => {
+      setIsLoading(true);
+      try {
+        const { data } = await getImages(searchQuery, page);
+        setImages(images => [...images, ...data.hits]);
+        setIsLoading(false);
 
-  fetchImages = async () => {
-    this.setState({ isLoading: true });
-    const { searchQuery, page } = this.state;
-    try {
-      const { data } = await getImages(searchQuery, page);
-      this.setState(prevState => ({
-        images: [...prevState.images, ...data.hits],
-        isLoading: false,
-      }));
+        if (data.totalHits === 0) {
+          alert('Cannot find your request! Please try again');
+        }
 
-      if (data.totalHits === 0) {
-        alert(
-          'Cannot find your request! Please try again'
-        );
-        return;
+        if (data.totalHits !== 0 && page === 1) {
+          alert(`We find ${data.totalHits} images`);
+        }
+
+        if (page > data.totalHits / 12 && data.totalHits !== 0) {
+          alert(
+            'We are sorry, but you have reached the end of search results.'
+          );
+          return setIsEndOfArray(false);
+        }
+      } catch (error) {
+        console.log(error);
       }
-      if (this.state.page > data.totalHits / 12 && data.totalHits !== 0) {
-        alert('We are sorry, but you have reached the end of search results.');
-        this.setState({ isEndOfArray: false });
-        return;
-      }
-      if (data.totalHits !== 0 && page === 1) {
-        alert(`We find ${data.totalHits} images`);
-        return;
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    };
+    fetchImages();
+  }, [searchQuery, page]);
+
+  const onHandleFormSubmit = imageName => {
+    setImages([]);
+    setSearchQuery(imageName);
+    setPage(1);
   };
 
-  onLoadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const onLoadMore = () => {
+    setPage(page => page + 1);
   };
 
-  openModal = largeImageURL => {
-    this.setState({
-      showModal: true,
-      fullSizeImg: largeImageURL,
-    });
+  const openModal = fullSizeImg => {
+    setFullSizeImg(fullSizeImg);
+    setShowModal(true);
   };
 
-  closeModal = () => {
-    this.setState({ showModal: false, fullSizeImg: '' });
+  const closeModal = () => {
+    setShowModal(false);
   };
 
-  render() {
-    const {
-      searchQuery,
-      images,
-      isLoading,
-      fullSizeImg,
-      showModal,
-      isEndOfArray,
-    } = this.state;
     return (
       <div className={css.app}>
-        <Searchbar onSubmit={this.onHandleFormSubmit} />
+        <Searchbar onSubmit={onHandleFormSubmit} />
         {isLoading && (
           <div className={css.loader}>
             <Circles
@@ -103,19 +81,18 @@ export class App extends Component {
           </div>
         )}
         {images.length > 0 && (
-          <ImageGallery images={images} onImageClick={this.openModal} />
+          <ImageGallery images={images} onImageClick={openModal} />
         )}
-        {images.length > 0 && isEndOfArray && (
-          <Button onLoadMoreClick={this.onLoadMore} />
+        {isEndOfArray && images.length > 0 && (
+          <Button type="button" onLoadMoreClick={onLoadMore} />
         )}
         {showModal && (
           <Modal
             fullSizeImg={fullSizeImg}
             searchQuery={searchQuery}
-            onClose={this.closeModal}
+            onClose={closeModal}
           ></Modal>
         )}
       </div>
     );
   }
-}
