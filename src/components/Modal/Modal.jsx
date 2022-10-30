@@ -2,14 +2,14 @@ import React, { useEffect } from 'react';
 
 import css from'./Modal.module.css';
 
-export default function Modal({ onClose, largeImageImg }) {
+export default function Modal({ onClose, fullSizeImg, searchQuery }) {
   useEffect(() => {
-     const handleKeyDown = evt => {
-       if (evt.code === 'Escape') {
-         onClose();
-       }
+    const handleKeyDown = evt => {
+      if (evt.code === 'Escape') {
+        onClose();
+      }
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
 
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -24,7 +24,7 @@ export default function Modal({ onClose, largeImageImg }) {
   return (
     <div className={css.overlay} onClick={handleBackdropClick}>
       <div className={css.modal}>
-        <img src={largeImageImg} alt='' />
+        <img src={fullSizeImg} alt={searchQuery} />
       </div>
     </div>
   );

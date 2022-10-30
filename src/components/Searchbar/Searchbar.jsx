@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { ImSearch } from 'react-icons/im';
+import { toast } from 'react-toastify';
 import css from './Searchbar.module.css';
 
 function Searchbar({ onSubmit }) {
@@ -14,7 +15,7 @@ function Searchbar({ onSubmit }) {
         evt.preventDefault();
       
         if (searchQuery.trim() === '') {
-            alert('Please enter your search term');
+            toast.error('Please enter your search term');
             return;
         };
 

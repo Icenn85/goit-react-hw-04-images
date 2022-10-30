@@ -6,6 +6,7 @@ import { ImageGallery } from './ImageGallery/ImageGallery';
 import { getImages } from '../service/api';
 import { Button } from './Button/Button';
 import { Circles } from 'react-loader-spinner';
+import { ToastContainer, toast } from 'react-toastify';
 
 export function App() {
    const [searchQuery, setSearchQuery] = useState('');
@@ -28,21 +29,21 @@ export function App() {
         setIsLoading(false);
 
         if (data.totalHits === 0) {
-          alert('Cannot find your request! Please try again');
+          toast.warn('Cannot find your request! Please try again');
         }
 
         if (data.totalHits !== 0 && page === 1) {
-          alert(`We find ${data.totalHits} images`);
+          toast.warn(`We find ${data.totalHits} images`);
         }
 
         if (page > data.totalHits / 12 && data.totalHits !== 0) {
-          alert(
+          toast.warn(
             'We are sorry, but you have reached the end of search results.'
           );
           return setIsEndOfArray(false);
         }
       } catch (error) {
-        console.log(error);
+        toast.warn('sorry, try again later');
       }
     };
     fetchImages();
@@ -93,6 +94,7 @@ export function App() {
             onClose={closeModal}
           ></Modal>
         )}
+        <ToastContainer position="top-center" theme="colored" />
       </div>
     );
   }
